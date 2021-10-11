@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block defs %}
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3.layout.cloud.js"></script>
+
+{% autoescape off %}
+{% regroup words|dictsort:"word" by word as words_list %}
+<script>
+    const getColorGroup = d3.scaleOrdinal(d3.schemeCategory10);
+    let words = [
+        {% for word, words_metas in words_list %}
+            {% regroup words_metas by part_of_speech as pos_list %}
+            {% regroup words_metas by text as text_list %}
+            {
+                word: "{{ word|escapejs }}",
+                count: {{ words_metas|length }},
+                pos_tags: [
+                    {% for pos, pos_metas in pos_list %}
+                    {
+                        repr: "{{ pos|escapejs }}",
+                        value: "{{ pos.name|escapejs }}",
+                        count: {{ pos_metas|length }},
+                    },
+                    {% endfor %}
+                ],
+                texts: [
+                    {% for text, text_metas in text_list %}
+                        {
+                            repr: "{{ text|escapejs }}",
+                            value: "{{ text.text|escapejs }}",
+                            count: {{ text_metas|length }},
+                        },
+                    {% endfor %}
+                ],
+            },
+        {% endfor %}
+    ]
+    const maxFontSize = 100;
+    const maxWordCount = Math.max.apply(Math, words.map(w => w.count));
+    const fontSizeCoefficient = maxFontSize / maxWordCount;
+
+    function getMajorPOS(word) {
+        if (!word.pos_tags.length) return "";
+        let posIndex = Object.keys(word.pos_tags).reduce((a, b) => {
+            return word.pos_tags[a].count > word.pos_tags[b].count ? a : b;
+        });
+        return word.pos_tags[posIndex].value;
+    }
+
+    function initGraph() {
+        let margin = {top: 10, right: 10, bottom: 10, left: 10},
+            width = 650 - margin.left - margin.right,
+            height = 650 - margin.top - margin.bottom;
+        let svg = d3
+            .select("#wordcloud")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        let layout = d3.layout.cloud()
+            .size([width, height])
+            .words(words)
+            .padding(5)
+            .rotate(() => ~~(Math.random() * 2) * 90)
+            .fontSize(d => d.count * 3)
+            .on("end", draw);
+        layout.start();
+
+        function draw(words) {
+            svg
+                .append("g")
+                .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
+                .selectAll("text")
+                .data(words)
+                .enter()
+                .append("text")
+                .style("font-size", d => d.count * fontSizeCoefficient)
+                .style("fill", d => getColorGroup(getMajorPOS(d)))
+                .attr("class", "word")
+                .attr("text-anchor", "middle")
+                .attr("transform", d => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
+                .text(d => d.word)
+                .append("title")
+                .text(d => {
+                    let posTags = Array.from(d.pos_tags, d => d.repr);
+                    let texts = Array.from(d.texts, d => d.repr);
+                    return `${d.word}\nPart of speech: ${posTags.join()}\nMet in texts: ${texts.join()}`;
+                });
+        }
+    }
+    window.onload = initGraph;
+</script>
+{% endautoescape %}
+
+{% endblock defs %}
+
+{% block content %}
+    <a href="{% url "analyze_text" %}">Analyze your text</a>
+    <h2>Filter words</h2>
+    <form action="" method="get">
+        {{ form }}
+        <input type="submit" value="Filter">
+    </form>
+    {% if words %}
+        <h2>Words cloud</h2>
+        The more often a word meets, the larger its font.
+        <br/>Hover over a word to get more information about it.
+        <div id="wordcloud"></div>
+    {% endif %}
+    {% if text %}
+        <h2>Selected text</h2>
+        <textarea readonly>{{ text.text }}</textarea>
+    {% endif %}
+{% endblock content %}
