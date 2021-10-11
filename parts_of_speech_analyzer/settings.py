@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-d4xi%b0*r56)-vj7%8th4f-)@1x=_g3kael@^an3w#^o4s8d&k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['posanalyzer.herokuapp.com', ]
+ALLOWED_HOSTS = []
 
 
 # Application definition
