@@ -14,7 +14,7 @@ validate_text_language = get_language_validator(settings.LANGUAGE_MODELS)
 
 # noinspection PyTypeChecker
 class Text(models.Model):
-    text = models.TextField(db_index=True)
+    text = models.TextField()
 
     @functools.cached_property
     def language(self) -> tp.Optional[LanguageMeta]:
