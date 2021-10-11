@@ -3,7 +3,7 @@ name = "parts_of_speech_analyzer"
 version = "0.1.0"
 description = "A web application analyzing english text for parts of speech."
 authors = ["Oleksandr Baltian <obaltian@icloud.com>"]
-license = "GPL"
+license = "GPLv3.0"
 
 [tool.poetry.dependencies]
 python = "^3.9"
