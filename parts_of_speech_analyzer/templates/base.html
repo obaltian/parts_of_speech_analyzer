@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        footer {
+            min-height:50px;
+        }
+        /* Trick */
+        body{
+            display: flex;
+            flex-direction: column;
+        }
+
+        footer{
+            margin-top: auto;
+        }
+        textarea {
+            width: 50%;
+            resize: none;
+            min-height: 200px;
+        }
+    </style>
+    <title>{% block title %}POS analyzer{% endblock title %}</title>
+    {% block defs %}{% endblock defs %}
+</head>
+<body>
+<header>
+    <h1>Parts of Speech Analyzer</h1>
+</header>
+<article>
+    {% block content %}{% endblock content %}
+</article>
+<footer contenteditable="true">
+    By Oleksandr Baltian (obaltian@icloud.com)
+</footer>
+</body>
+</html>
